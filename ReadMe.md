@@ -15,6 +15,7 @@
 * getParallelPlan.sql - Get parallel plan.
 * getConnection.sql - Get Connectoins.
 * getOldStat.sql - Get Old Statistics.
+* getDiskUsageOfTable.sql - Get Disk Usage Of Table
 * getServerInfo.sql - Get SQL Server information.
 * getSynonyms.sql - Get each database synonyms.
 * getReplicationInfo.sql - Get replicaton information.
