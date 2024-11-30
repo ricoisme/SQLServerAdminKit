@@ -29,6 +29,7 @@ $textCatalog_path 	= "$output_path\$dateFolder\$db\FullTextCatalog\"
 $udtts_path 		= "$output_path\$dateFolder\$db\UserDefinedTableTypes\"
 $synonys_path 		= "$output_path\$dateFolder\$db\Synonyms\"
 $sequence_path 		= "$output_path\$dateFolder\$db\Sequences\"
+$schema_path 		= "$output_path\$dateFolder\$db\Schemas\"
 
 $tbl		 	= $db.tables | Where-object { $_.IsSystemObject -eq $false } 
 $storedProcs		= $db.StoredProcedures | Where-object { $_.IsSystemObject -eq $false } 
@@ -40,6 +41,7 @@ $udfs		 	= $db.UserDefinedFunctions | Where-object { $_.IsSystemObject -eq $fals
 $udtts		 	= $db.UserDefinedTableTypes
 $synonyms 		= $db.Synonyms
 $sequences 		= $db.Sequences
+$schemas 		= $db.Schemas
 	
 # Set scripter options to ensure only data is scripted
 $scripter.Options.ScriptSchema 	= $true;
@@ -76,6 +78,10 @@ function CopyObjectsToFiles($objects, $outDir) {
 	foreach ($o in $objects) { 
 	
 		if ($o -ne $null) {
+			if ($o.Name -eq $null -or $o.Name -eq "" -or $o.Name -in @("dbo", "sys", "information_schema","db_owner","db_accessadmin","db_backupoperator","db_datareader","db_datawriter","db_ddladmin","db_denydatareader","db_denydatawriter","db_owner","db_securityadmin","guest")) {
+				Write-Host "Writing " $o.Name " ignore"
+				continue
+			}	
 			
 			$schemaPrefix = ""
 			
@@ -84,10 +90,10 @@ function CopyObjectsToFiles($objects, $outDir) {
 			}	
 			
 			$scripter.Options.ScriptDrops 	= $true
-			$dropScript = $scripter.EnumScript($o) +" GO;"
+			$dropScript = $scripter.EnumScript($o) +" GO"
 			
 			$scripter.Options.ScriptDrops = $false
-			$createScript = $scripter.EnumScript($o)+" GO;"
+			$createScript = $scripter.EnumScript($o)+" GO"
 			
 			$fullScript = ($dropScript -join [Environment]::NewLine) + [Environment]::NewLine + ($createScript -join [Environment]::NewLine)
             $scriptFile =  $outDir + $schemaPrefix + $o.Name + ".sql"
@@ -102,6 +108,7 @@ function CopyObjectsToFiles($objects, $outDir) {
 }
 
 # Output the scripts
+CopyObjectsToFiles $schemas $schema_path
 #CopyObjectsToFiles $tbl $table_path
 #CopyObjectsToFiles $storedProcs $storedProcs_path
 #CopyObjectsToFiles $triggers $triggers_path
